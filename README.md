@@ -1,6 +1,6 @@
  # 🩸 Blood Donation Management System
 
-A full-stack **Blood Donation Management System** that connects blood donors and requesters.  
+ **Blood Donation Management System** that connects blood donors and requesters.  
 This application allows donors to register, users to create blood requests, and tracks donation history securely.
 
 This project is developed as an **academic / final-year full-stack project** using modern web technologies.
