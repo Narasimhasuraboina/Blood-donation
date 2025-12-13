@@ -1,0 +1,68 @@
+/* frontend/src/App.css */
+body {
+    /* Define default (Light Mode) variables */
+    --color-primary: #1e88e5; /* New Blue primary color */
+    --color-secondary: #000000;
+    --color-background: #ffffff;
+    --color-text: #2c3e50;
+    --color-card-bg: #ffffff;
+    --color-border: #cccccc;
+    --color-error: #e74c3c;
+    --color-success: #27ae60;
+    --color-input-bg: #f9f9f9;
+    --color-tab-inactive: #95a5a6;
+
+    /* Apply default styles */
+    background-color: var(--color-background);
+    color: var(--color-text);
+    transition: background-color 0.3s, color 0.3s;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Dark Mode Variables */
+body.dark-mode {
+    --color-primary: #5d98cf; /* Lighter blue for dark mode visibility */
+    --color-secondary: #000000;
+    --color-background: #141f33; /* Dark Blue Background */
+    --color-text: #ecf0f1;
+    --color-card-bg: #213047; /* Darker card background */
+    --color-border: #34495e;
+    --color-error: #e74c3c;
+    --color-success: #2ecc71;
+    --color-input-bg: #34495e;
+    --color-tab-inactive: #7f8c8d;
+}
+
+/* Base styles for the main app container */
+.App {
+    min-height: 100vh;
+}
+
+/* Basic Form/Input Styling (matches the dark theme image) */
+input, select, button {
+    font-size: 16px;
+    padding: 10px;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="date"], input[type="tel"], select {
+    background-color: var(--color-input-bg);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+button {
+    background-color: var(--color-primary);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    filter: brightness(1.1);
+}

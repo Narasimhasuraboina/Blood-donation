@@ -1,0 +1,28 @@
+ # --- Dependencies (CRITICAL) ---
+
+# General rule to ignore any folder named node_modules anywhere
+node_modules/ 
+
+# Specific rules for clarity and robustness
+/backend/node_modules/
+/frontend/node_modules/
+
+# Node Lock Files
+package-lock.json
+yarn.lock
+npm-debug.log
+yarn-error.log
+
+# --- Environment Variables (CRITICAL SECRETS) ---
+.env
+.env.local
+
+# --- Build Outputs ---
+/build
+/dist
+/coverage
+/frontend/build
+
+# --- IDE/OS Files ---
+.DS_Store
+*.log
