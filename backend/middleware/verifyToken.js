@@ -1,27 +1,24 @@
-// backend/middleware/verifyToken.js
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
 
-const verifyToken = (req, res, next) => {
-    // 1. Check for token in the Authorization header (standard practice)
-    const token = req.headers.authorization?.split(' ')[1];
+module.exports = (req, res, next) => {
+  const authHeader = req.headers.authorization;
 
-    if (!token) {
-        return res.status(403).json({ message: 'Access denied. No token provided.' });
-    }
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "No token provided" });
+  }
 
-    try {
-        // 2. Verify the token using your secret key
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        
-        // 3. Attach the decoded user info (donor ID, email) to the request object
-        req.donor = decoded; 
-        
-        // 4. Proceed to the next middleware or the route handler
-        next();
-    } catch (error) {
-        // Token is invalid (expired, wrong signature, etc.)
-        return res.status(401).json({ message: 'Invalid token.' });
-    }
+  const token = authHeader.split(" ")[1];
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    req.donor = {
+      id: decoded.id,
+      email: decoded.email,
+    };
+
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: "Invalid or expired token" });
+  }
 };
-
-module.exports = verifyToken;

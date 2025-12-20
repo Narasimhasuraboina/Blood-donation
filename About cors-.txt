@@ -1,0 +1,14 @@
+About cors:-
+In simple terms, the cors middleware is a security gatekeeper you explicitly authorize to allow your frontend and backend to talk to each other without the browser panicking.
+
+About Axios:
+Why do we need it?
+Your app usually has:
+Frontend (React / JS)
+Backend (Node / Express / PHP)
+Database (MySQL)
+Frontend cannot directly talk to the database ❌
+So it talks to the backend API using HTTP requests.
+👉 Axios helps send those requests easily
+One-line memory trick 🧠
+Axios = messenger between frontend and backend

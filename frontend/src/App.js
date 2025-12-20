@@ -1,20 +1,26 @@
 // frontend/src/App.js
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
+
 import AuthPage from './components/AuthPage';
 import DashboardPage from './pages/DashboardPage';
-import RequestList from './components/RequestList'; 
- 
+import RequestList from './components/RequestList';
+import BloodRequest from './components/BloodRequest';
 
-
-import './App.css'; 
+import './App.css';
 
 function App() {
-    const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
     const [isDarkMode, setIsDarkMode] = useState(() => {
         const savedMode = localStorage.getItem('darkMode');
-        return savedMode === 'true' || false; 
+        return savedMode === 'true' || false;
     });
+
+    // Always start logged out
+    useEffect(() => {
+        localStorage.removeItem('token');
+    }, []);
 
     useEffect(() => {
         if (isDarkMode) {
@@ -34,61 +40,77 @@ function App() {
         setIsLoggedIn(false);
     };
 
-    const toggleDarkMode = () => {
-        setIsDarkMode(!isDarkMode);
-    };
-
     return (
         <Router>
             <div className="App">
+                {/* HEADER */}
                 <header style={styles.header}>
                     <div style={styles.headerContent}>
                         <h1 style={styles.title}>Blood Donation Portal</h1>
+
                         <nav style={styles.nav}>
-                            {isLoggedIn ? (
+                            {/* 🔴 REQUEST BLOOD ALWAYS VISIBLE */}
+                            <Link to="/request" style={styles.navLink}>
+                                🩸 Request Blood
+                            </Link>
+
+                            {isLoggedIn && (
                                 <>
                                     <Link to="/dashboard" style={styles.navLink}>Dashboard</Link>
-                                    <button onClick={handleLogout} style={styles.logoutButton}>Logout</button>
+                                    <button onClick={handleLogout} style={styles.logoutButton}>
+                                        Logout
+                                    </button>
                                 </>
-                            ) : (
-                                <Link to="/auth" style={styles.navLink}>Login/Register</Link>
                             )}
-                            <button onClick={toggleDarkMode} style={styles.modeToggle}>
+
+                            <button onClick={() => setIsDarkMode(!isDarkMode)} style={styles.modeToggle}>
                                 {isDarkMode ? '🌞 Light Mode' : '🌙 Dark Mode'}
                             </button>
                         </nav>
                     </div>
                 </header>
 
+                {/* ROUTES */}
                 <main>
                     <Routes>
-                        {/* Homepage: Redirects to Auth/Dashboard */}
-                        <Route 
-                            path="/" 
-                            element={isLoggedIn ? <Navigate to="/dashboard" /> : <Navigate to="/auth" />} 
-                        />
-                        
-                        {/* Authentication Route: Shows Login/Register and Public Requests */}
-                        <Route 
-                            path="/auth" 
-                            element={isLoggedIn ? <Navigate to="/dashboard" /> : (
-                                <>
-                                    <RequestList />
-                                    <AuthPage onAuthSuccess={handleAuthSuccess} />
-                                </>
-                            )} 
+                        {/* ALWAYS START AT LOGIN */}
+                        <Route path="/" element={<Navigate to="/auth" />} />
+
+                        {/* LOGIN / REGISTER */}
+                        <Route
+                            path="/auth"
+                            element={
+                                isLoggedIn
+                                    ? <Navigate to="/dashboard" />
+                                    : (
+                                        <>
+                                            <RequestList />
+                                            <AuthPage onAuthSuccess={handleAuthSuccess} />
+                                        </>
+                                    )
+                            }
                         />
 
-                        {/* Protected Dashboard Route */}
-                        <Route 
-                            path="/dashboard" 
-                            element={isLoggedIn ? <DashboardPage onLogout={handleLogout} /> : <Navigate to="/auth" />} 
+                        {/* REQUEST BLOOD (PUBLIC) */}
+                        <Route
+                            path="/request"
+                            element={<BloodRequest />}
                         />
-                        
-                        {/* Fallback/404 */}
-                        <Route 
-                            path="*" 
-                            element={<p style={{textAlign: 'center', marginTop: '100px', color: 'var(--color-text)'}}>404 - Page Not Found</p>} 
+
+                        {/* DASHBOARD (PROTECTED) */}
+                        <Route
+                            path="/dashboard"
+                            element={
+                                isLoggedIn
+                                    ? <DashboardPage />
+                                    : <Navigate to="/auth" />
+                            }
+                        />
+
+                        {/* 404 */}
+                        <Route
+                            path="*"
+                            element={<p style={{ textAlign: 'center', marginTop: '100px' }}>404 - Page Not Found</p>}
                         />
                     </Routes>
                 </main>
@@ -99,11 +121,9 @@ function App() {
 
 const styles = {
     header: {
-        backgroundColor: 'var(--color-card-bg)', 
-        color: 'var(--color-text)',
+        backgroundColor: 'var(--color-card-bg)',
         borderBottom: '1px solid var(--color-border)',
         padding: '10px 0',
-        transition: 'background-color 0.3s, color 0.3s',
     },
     headerContent: {
         maxWidth: '1200px',
@@ -116,7 +136,7 @@ const styles = {
     title: {
         margin: 0,
         fontSize: '1.8em',
-        color: 'var(--color-primary)'
+        color: 'var(--color-primary)',
     },
     nav: {
         display: 'flex',
@@ -127,9 +147,6 @@ const styles = {
         color: 'var(--color-text)',
         textDecoration: 'none',
         fontSize: '1em',
-        padding: '5px 10px',
-        borderRadius: '5px',
-        transition: 'color 0.3s, background-color 0.3s'
     },
     logoutButton: {
         backgroundColor: 'var(--color-error)',
@@ -138,7 +155,6 @@ const styles = {
         padding: '5px 10px',
         borderRadius: '5px',
         cursor: 'pointer',
-        fontSize: '1em',
     },
     modeToggle: {
         backgroundColor: 'var(--color-input-bg)',
@@ -147,8 +163,7 @@ const styles = {
         padding: '5px 10px',
         borderRadius: '5px',
         cursor: 'pointer',
-        fontSize: '1em',
-    }
-}
+    },
+};
 
 export default App;

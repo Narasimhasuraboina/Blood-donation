@@ -1,100 +1,108 @@
-// frontend/src/components/RequestList.js (Updated for Conditional Filtering)
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
-// API endpoints
-const API_URL_PUBLIC = 'http://localhost:5000/api/request/active'; 
-const API_URL_FILTERED = 'http://localhost:5000/api/request/filtered'; 
+const API_ACTIVE = 'http://localhost:5000/api/request/active';
+const API_CONTACT = 'http://localhost:5000/api/request';
 
 function RequestList() {
     const [requests, setRequests] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    
-    const token = localStorage.getItem('token'); // Check for token
-    const isLoggedin = !!token;
+    const [selectedRequest, setSelectedRequest] = useState(null);
+    const [contact, setContact] = useState(null);
+    const navigate = useNavigate();
+
+    const token = localStorage.getItem('token');
 
     useEffect(() => {
-        const fetchRequests = async () => {
-            setLoading(true);
-            const apiUrl = isLoggedin ? API_URL_FILTERED : API_URL_PUBLIC;
-            
-            try {
-                const config = isLoggedin ? { headers: { Authorization: `Bearer ${token}` } } : {};
-                const response = await axios.get(apiUrl, config);
-                
-                setRequests(response.data);
-                setError('');
-            } catch (err) {
-                const errorMessage = isLoggedin 
-                    ? 'Failed to fetch personalized requests. Token may be expired.'
-                    : 'Failed to fetch public requests. Server may be down.';
-                setError(errorMessage);
-            } finally {
-                setLoading(false);
-            }
-        };
+        axios.get(API_ACTIVE).then(res => {
+            setRequests(res.data);
+        });
+    }, []);
 
-        fetchRequests();
-    }, [isLoggedin, token]); // Re-run when login status changes
+    const handleClick = (request) => {
+        if (!token) {
+            navigate('/auth');
+            return;
+        }
+        setSelectedRequest(request);
+    };
 
-    if (loading) return <p style={styles.message}>Loading Active Requests...</p>;
-    if (error) return <p style={styles.errorMessage}>{error}</p>;
-    
-    const headerText = isLoggedin 
-        ? `🩸 Personalized Requests (${requests.length})` 
-        : `🩸 Public Blood Requests (${requests.length})`;
-        
-    if (requests.length === 0) {
-        const emptyMessage = isLoggedin 
-            ? "No active requests currently matching your blood type." 
-            : "No active public requests currently.";
-        return <p style={styles.message}>{emptyMessage}</p>;
-    }
-
-
-    const getUrgencyStyle = (urgency) => {
-        const baseStyle = { padding: '4px 8px', borderRadius: '4px', fontWeight: 'bold' };
-        switch (urgency) {
-            case 'CRITICAL': return { ...baseStyle, color: 'white', backgroundColor: 'var(--color-error)' };
-            case 'HIGH': return { ...baseStyle, color: 'white', backgroundColor: '#e67e22' };
-            case 'MEDIUM': return { ...baseStyle, color: '#333', backgroundColor: '#f1c40f' };
-            default: return { ...baseStyle, color: 'var(--color-text)', backgroundColor: 'var(--color-input-bg)' };
+    const handleYes = async () => {
+        try {
+            const res = await axios.get(
+                `${API_CONTACT}/${selectedRequest.request_id}/contact`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+            setContact(res.data);
+        } catch (err) {
+            alert(err.response?.data?.message || 'Access denied');
         }
     };
 
-    // --- JSX (List Display) ---
     return (
-        <div style={styles.container}>
-            <h2>{headerText}</h2>
-            <div style={styles.listContainer}>
-                {requests.map((request) => (
-                    <div key={request.request_id} style={styles.requestItem}>
-                        <p style={styles.bloodType}>
-                            {request.requested_blood_type}
-                            <span style={styles.units}> (Need {request.units_required} Units)</span>
-                        </p>
-                        <p><strong>Hospital:</strong> {request.hospital_name}</p>
-                        <p style={styles.details}>
-                            <span style={getUrgencyStyle(request.urgency_level)}>{request.urgency_level}</span>
-                            <span>Requested: {new Date(request.request_date).toLocaleDateString()}</span>
-                        </p>
-                    </div>
-                ))}
-            </div>
+        <div style={{ padding: '20px' }}>
+            <h2>Blood Requests</h2>
+
+            {requests.map(req => (
+                <div
+                    key={req.request_id}
+                    onClick={() => handleClick(req)}
+                    style={{
+                        padding: '15px',
+                        margin: '10px 0',
+                        border: '1px solid var(--color-border)',
+                        borderRadius: '8px',
+                        cursor: 'pointer'
+                    }}
+                >
+                    <strong>{req.requested_blood_type}</strong> |
+                    {` ${req.hospital_name}`} |
+                    {` Urgency: ${req.urgency_level}`}
+                </div>
+            ))}
+
+            {selectedRequest && !contact && (
+                <div style={modal}>
+                    <p>
+                        You have blood type <b>{selectedRequest.requested_blood_type}</b><br />
+                        Do you want to donate?
+                    </p>
+                    <button onClick={handleYes}>YES</button>
+                    <button onClick={() => setSelectedRequest(null)}>NO</button>
+                </div>
+            )}
+
+            {contact && (
+                <div style={modal}>
+                    <h3>Contact Details</h3>
+                    <p><b>Hospital:</b> {contact.hospital_name}</p>
+                    <p><b>Contact:</b> {contact.contact_person}</p>
+                    <button onClick={() => {
+                        setSelectedRequest(null);
+                        setContact(null);
+                    }}>
+                        Close
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
 
-const styles = {
-    container: { maxWidth: '800px', margin: '50px auto', padding: '20px', backgroundColor: 'var(--color-card-bg)', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' },
-    listContainer: { display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' },
-    requestItem: { padding: '15px', border: '1px solid var(--color-border)', borderRadius: '6px', backgroundColor: 'var(--color-input-bg)', transition: 'background-color 0.3s' },
-    bloodType: { fontSize: '1.4em', fontWeight: 'bold', color: 'var(--color-error)', marginBottom: '5px' },
-    units: { fontSize: '0.8em', fontWeight: 'normal', color: 'var(--color-tab-inactive)' },
-    details: { display: 'flex', justifyContent: 'space-between', marginTop: '10px', fontSize: '0.9em' },
-    errorMessage: { color: 'var(--color-error)', backgroundColor: 'rgba(231, 76, 60, 0.1)', padding: '10px', borderRadius: '4px' },
-    message: { color: 'var(--color-text)', textAlign: 'center' }
+const modal = {
+    position: 'fixed',
+    top: '30%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    background: 'var(--color-card-bg)',
+    padding: '20px',
+    borderRadius: '10px',
+    border: '1px solid var(--color-border)',
+    zIndex: 1000
 };
 
 export default RequestList;
