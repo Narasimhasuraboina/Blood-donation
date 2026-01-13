@@ -1,24 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
-const API_ACTIVE = 'http://localhost:5000/api/request/active';
-const API_CONTACT = 'http://localhost:5000/api/request';
+const API = `${API_BASE_URL}/api`;
 
 function RequestList() {
     const [requests, setRequests] = useState([]);
     const [selectedRequest, setSelectedRequest] = useState(null);
     const [contact, setContact] = useState(null);
-    const navigate = useNavigate();
 
+    const navigate = useNavigate();
     const token = localStorage.getItem('token');
 
+    // ✅ Fetch active blood requests
     useEffect(() => {
-        axios.get(API_ACTIVE).then(res => {
-            setRequests(res.data);
-        });
+        axios
+            .get(`${API}/request/active`)
+            .then(res => setRequests(res.data))
+            .catch(err => console.error(err));
     }, []);
 
+    // ✅ Click on request
     const handleClick = (request) => {
         if (!token) {
             navigate('/auth');
@@ -27,14 +30,15 @@ function RequestList() {
         setSelectedRequest(request);
     };
 
+    // ✅ Get contact details
     const handleYes = async () => {
         try {
             const res = await axios.get(
-                `${API_CONTACT}/${selectedRequest.request_id}/contact`,
+                `${API}/request/${selectedRequest.request_id}/contact`,
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
-                    }
+                        Authorization: `Bearer ${token}`,
+                    },
                 }
             );
             setContact(res.data);
@@ -54,21 +58,24 @@ function RequestList() {
                     style={{
                         padding: '15px',
                         margin: '10px 0',
-                        border: '1px solid var(--color-border)',
+                        border: '1px solid #ccc',
                         borderRadius: '8px',
                         cursor: 'pointer'
                     }}
                 >
-                    <strong>{req.requested_blood_type}</strong> |
-                    {` ${req.hospital_name}`} |
-                    {` Urgency: ${req.urgency_level}`}
+                    <strong>{req.requested_blood_type}</strong>
+                    {' | '}
+                    {req.hospital_name}
+                    {' | '}
+                    Urgency: {req.urgency_level}
                 </div>
             ))}
 
             {selectedRequest && !contact && (
                 <div style={modal}>
                     <p>
-                        You have blood type <b>{selectedRequest.requested_blood_type}</b><br />
+                        You have blood type <b>{selectedRequest.requested_blood_type}</b>
+                        <br />
                         Do you want to donate?
                     </p>
                     <button onClick={handleYes}>YES</button>
@@ -98,10 +105,10 @@ const modal = {
     top: '30%',
     left: '50%',
     transform: 'translate(-50%, -50%)',
-    background: 'var(--color-card-bg)',
+    background: '#fff',
     padding: '20px',
     borderRadius: '10px',
-    border: '1px solid var(--color-border)',
+    border: '1px solid #ccc',
     zIndex: 1000
 };
 

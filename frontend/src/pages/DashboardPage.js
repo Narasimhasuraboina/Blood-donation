@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "../config";
 
-const API = "http://localhost:5000/api";
+// Central API base
+const API = `${API_BASE_URL}/api`;
 
 function DashboardPage() {
   const [profile, setProfile] = useState(null);
@@ -87,7 +89,8 @@ function DashboardPage() {
 
           {matchingRequests.map((req) => (
             <div key={req.request_id} style={styles.requestItem}>
-              <b>{req.requested_blood_type}</b> | {req.hospital_name}<br />
+              <b>{req.requested_blood_type}</b> | {req.hospital_name}
+              <br />
               Urgency: {req.urgency_level}
             </div>
           ))}

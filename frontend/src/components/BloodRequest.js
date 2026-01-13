@@ -1,26 +1,28 @@
 // frontend/src/components/BloodRequest.js
-import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // ✅ ADD THIS
+import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../config";
 
-const API_URL_REQUEST = 'http://localhost:5000/api/request/create';
+// Central API base
+const API = `${API_BASE_URL}/api`;
 
 function BloodRequest() {
-    const navigate = useNavigate(); // ✅ ADD THIS
+    const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
-        requested_blood_type: '',
+        requested_blood_type: "",
         units_required: 1,
-        urgency_level: 'MEDIUM',
-        hospital_name: '',
-        contact_person: '',
+        urgency_level: "MEDIUM",
+        hospital_name: "",
+        contact_person: "",
     });
 
-    const [message, setMessage] = useState('');
+    const [message, setMessage] = useState("");
     const [isSuccess, setIsSuccess] = useState(false);
 
-    const bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-    const urgencyLevels = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
+    const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+    const urgencyLevels = ["LOW", "MEDIUM", "HIGH", "CRITICAL"];
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -28,36 +30,35 @@ function BloodRequest() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setMessage('Submitting request...');
+        setMessage("Submitting request...");
         setIsSuccess(false);
 
         try {
-            await axios.post(API_URL_REQUEST, formData);
+            await axios.post(`${API}/request/create`, formData);
 
-
-            setMessage('✅ Request submitted successfully! Redirecting to login...');
+            setMessage("✅ Request submitted successfully! Redirecting to login...");
             setIsSuccess(true);
 
             // Clear form
             setFormData({
-                requested_blood_type: '',
+                requested_blood_type: "",
                 units_required: 1,
-                urgency_level: 'MEDIUM',
-                hospital_name: '',
-                contact_person: '',
+                urgency_level: "MEDIUM",
+                hospital_name: "",
+                contact_person: "",
             });
 
-            // ✅ Redirect to login page after 2 seconds
+            // Redirect to login after 2 seconds
             setTimeout(() => {
-                navigate('/auth');
+                navigate("/auth");
             }, 2000);
-
         } catch (error) {
             const errorMessage =
-                error.response?.data?.message || 'Request failed due to network error.';
+                error.response?.data?.message ||
+                "Request failed due to network error.";
             setMessage(`❌ ${errorMessage}`);
             setIsSuccess(false);
-            console.error('Blood Request Error:', error);
+            console.error("Blood Request Error:", error);
         }
     };
 
@@ -78,8 +79,10 @@ function BloodRequest() {
                     style={styles.input}
                 >
                     <option value="">Select Required Blood Type *</option>
-                    {bloodTypes.map(type => (
-                        <option key={type} value={type}>{type}</option>
+                    {bloodTypes.map((type) => (
+                        <option key={type} value={type}>
+                            {type}
+                        </option>
                     ))}
                 </select>
 
@@ -97,12 +100,14 @@ function BloodRequest() {
                 <select
                     name="urgency_level"
                     value={formData.urgency_level}
-                    onChange={handleChange}
+                    onChange={handleChange} 
                     required
                     style={styles.input}
                 >
-                    {urgencyLevels.map(level => (
-                        <option key={level} value={level}>{level}</option>
+                    {urgencyLevels.map((level) => (
+                        <option key={level} value={level}>
+                            {level}
+                        </option>
                     ))}
                 </select>
 
@@ -134,47 +139,47 @@ function BloodRequest() {
 
 const styles = {
     container: {
-        padding: '20px',
-        backgroundColor: 'var(--color-card-bg)',
-        borderRadius: '8px',
-        maxWidth: '450px',
-        margin: '0 auto'
+        padding: "20px",
+        backgroundColor: "var(--color-card-bg)",
+        borderRadius: "8px",
+        maxWidth: "450px",
+        margin: "0 auto",
     },
     form: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '15px'
+        display: "flex",
+        flexDirection: "column",
+        gap: "15px",
     },
     input: {
-        padding: '12px',
-        borderRadius: '5px',
-        border: '1px solid var(--color-border)',
-        backgroundColor: 'var(--color-input-bg)',
-        color: 'var(--color-text)'
+        padding: "12px",
+        borderRadius: "5px",
+        border: "1px solid var(--color-border)",
+        backgroundColor: "var(--color-input-bg)",
+        color: "var(--color-text)",
     },
     button: {
-        padding: '12px',
-        backgroundColor: 'var(--color-error)',
-        color: 'white',
-        border: 'none',
-        borderRadius: '5px',
-        cursor: 'pointer',
-        fontSize: '1em'
+        padding: "12px",
+        backgroundColor: "var(--color-error)",
+        color: "white",
+        border: "none",
+        borderRadius: "5px",
+        cursor: "pointer",
+        fontSize: "1em",
     },
     successMessage: {
-        color: 'var(--color-success)',
-        backgroundColor: 'rgba(39, 174, 96, 0.15)',
-        padding: '10px',
-        borderRadius: '5px',
-        textAlign: 'center'
+        color: "var(--color-success)",
+        backgroundColor: "rgba(39, 174, 96, 0.15)",
+        padding: "10px",
+        borderRadius: "5px",
+        textAlign: "center",
     },
     errorMessage: {
-        color: 'var(--color-error)',
-        backgroundColor: 'rgba(231, 76, 60, 0.15)',
-        padding: '10px',
-        borderRadius: '5px',
-        textAlign: 'center'
-    }
+        color: "var(--color-error)",
+        backgroundColor: "rgba(231, 76, 60, 0.15)",
+        padding: "10px",
+        borderRadius: "5px",
+        textAlign: "center",
+    },
 };
 
 export default BloodRequest;
